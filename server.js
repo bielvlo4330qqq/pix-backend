@@ -9,7 +9,7 @@ app.use(express.json());
 
 // 🔥 COLOQUE SEU TOKEN AQUI
 mercadopago.configure({
-  access_token: "SEU_ACCESS_TOKEN_AQUI"
+  access_token: process.env.ACCESS_TOKEN
 });
 
 app.get("/", (req, res) => {
