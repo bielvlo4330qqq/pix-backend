@@ -6,8 +6,6 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-
-// 🔥 COLOQUE SEU TOKEN AQUI
 mercadopago.configure({
   access_token: process.env.ACCESS_TOKEN
 });
