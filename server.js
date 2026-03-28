@@ -1,9 +1,22 @@
+const express = require("express");
+const mercadopago = require("mercadopago");
+const cors = require("cors");
+
+const app = express();
+app.use(express.json());
+app.use(cors());
+
+mercadopago.configure({
+  access_token: "SEU_TOKEN_AQUI"
+});
+
+/* ================= PIX ================= */
 app.post("/criar-pagamento", async (req, res) => {
   try {
     const { total } = req.body;
 
     const pagamento = await mercadopago.payment.create({
-      transaction_amount: Number(total),
+      transaction_amount: parseFloat(total),
       description: "Compra Pixel Store",
       payment_method_id: "pix",
       payer: {
@@ -13,17 +26,15 @@ app.post("/criar-pagamento", async (req, res) => {
 
     console.log("RESPOSTA MP:", pagamento.body);
 
-    // 🔥 valida se veio PIX
     const dadosPix = pagamento.body?.point_of_interaction?.transaction_data;
 
     if (!dadosPix) {
       return res.status(500).json({
-        error: "PIX não retornado pelo Mercado Pago",
+        error: "PIX não retornado",
         detalhe: pagamento.body
       });
     }
 
-    // ✅ retorno seguro
     res.json({
       qr_code: dadosPix.qr_code,
       qr_code_base64: dadosPix.qr_code_base64
@@ -31,10 +42,17 @@ app.post("/criar-pagamento", async (req, res) => {
 
   } catch (err) {
     console.error("ERRO PIX:", err);
-
     res.status(500).json({
       error: "Erro ao gerar PIX",
       detalhe: err.message
     });
   }
 });
+
+/* ================= STATUS ================= */
+app.get("/", (req,res)=>{
+  res.send("API ONLINE 🚀");
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("Servidor rodando"));
