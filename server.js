@@ -1,90 +1,45 @@
-import express from "express";
-import cors from "cors";
-import mercadopago from "mercadopago";
-
-const { MercadoPagoConfig, Payment } = mercadopago;
+const express = require("express");
+const cors = require("cors");
+const mercadopago = require("mercadopago");
 
 const app = express();
-app.use(express.json());
+
 app.use(cors());
+app.use(express.json());
 
-/* ================= CONFIG ================= */
-const client = new MercadoPagoConfig({
-  accessToken: process.env.ACCESS_TOKEN
+// 🔥 COLOQUE SEU TOKEN AQUI
+mercadopago.configure({
+  access_token: "APP_USR-1777996193160597-031816-ba8f1e228ae28d5a93265faaa9e95134-348606482"
 });
 
-const payment = new Payment(client);
-
-/* ================= PIX ================= */
-app.post("/criar-pagamento", async (req, res) => {
-  try {
-    const { total } = req.body;
-
-    const response = await payment.create({
-      body: {
-        transaction_amount: Number(total),
-        description: "Compra Pixel Store",
-        payment_method_id: "pix",
-        payer: {
-          email: "teste@teste.com"
-        }
-      }
-    });
-
-    const pix = response.point_of_interaction.transaction_data;
-
-    res.json({
-      qr_code: pix.qr_code,
-      qr_code_base64: pix.qr_code_base64
-    });
-
-  } catch (err) {
-    console.error("❌ ERRO PIX:", err);
-    res.status(500).json({
-      error: err.message
-    });
-  }
-});
-
-/* ================= CARTÃO ================= */
-app.post("/pagar-cartao", async (req, res) => {
-  try {
-    const { token, total, parcelas, email, bandeira } = req.body;
-
-    const response = await payment.create({
-      body: {
-        transaction_amount: Number(total),
-        token: token,
-        description: "Compra Pixel Store",
-        installments: Number(parcelas),
-        payment_method_id: bandeira || "visa",
-        payer: {
-          email: email
-        }
-      }
-    });
-
-    res.json({
-      status: response.status,
-      status_detail: response.status_detail
-    });
-
-  } catch (err) {
-    console.error("❌ ERRO CARTÃO:", err);
-    res.status(500).json({
-      error: err.message
-    });
-  }
-});
-
-/* ================= STATUS ================= */
 app.get("/", (req, res) => {
-  res.send("API ONLINE 🚀");
+  res.send("API PIX rodando 🚀");
 });
 
-/* ================= PORTA ================= */
-const PORT = process.env.PORT || 3000;
+app.post("/create-pix", async (req, res) => {
+  try {
+    const { amount } = req.body;
 
-app.listen(PORT, () => {
-  console.log("Servidor rodando na porta " + PORT);
+    const payment = await mercadopago.payment.create({
+      transaction_amount: Number(amount),
+      description: "Pagamento PixelCoin",
+      payment_method_id: "pix",
+      payer: {
+        email: "teste@teste.com"
+      }
+    });
+
+    res.json({
+      qr_code: payment.body.point_of_interaction.transaction_data.qr_code,
+      qr_code_base64: payment.body.point_of_interaction.transaction_data.qr_code_base64
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao gerar PIX" });
+  }
+});
+
+app.listen(3000, () => {
+  console.log("Servidor rodando em http://localhost:3000");
 });
