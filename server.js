@@ -1,15 +1,16 @@
 import express from "express";
 import cors from "cors";
-import { MercadoPagoConfig, Payment } from "mercadopago";
+import mercadopago from "mercadopago";
+
+const { MercadoPagoConfig, Payment } = mercadopago;
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-/* ================= CONFIG MERCADO PAGO ================= */
-// 🔒 coloque depois em variável de ambiente!
+/* ================= CONFIG ================= */
 const client = new MercadoPagoConfig({
-  accessToken: "APP_USR-1777996193160597-031816-ba8f1e228ae28d5a93265faaa9e95134"
+  accessToken: process.env.ACCESS_TOKEN
 });
 
 const payment = new Payment(client);
@@ -40,8 +41,7 @@ app.post("/criar-pagamento", async (req, res) => {
   } catch (err) {
     console.error("❌ ERRO PIX:", err);
     res.status(500).json({
-      error: "Erro ao gerar pagamento PIX",
-      detalhe: err.message
+      error: err.message
     });
   }
 });
@@ -72,8 +72,7 @@ app.post("/pagar-cartao", async (req, res) => {
   } catch (err) {
     console.error("❌ ERRO CARTÃO:", err);
     res.status(500).json({
-      error: "Erro ao processar cartão",
-      detalhe: err.message
+      error: err.message
     });
   }
 });
@@ -87,5 +86,5 @@ app.get("/", (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+  console.log("Servidor rodando na porta " + PORT);
 });
