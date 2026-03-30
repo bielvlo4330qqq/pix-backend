@@ -1,60 +1,54 @@
-const express = require("express");
-const cors = require("cors");
-const mercadopago = require("mercadopago");
-
-const { MercadoPagoConfig, Payment } = mercadopago;
+import express from "express";
+import mercadopago from "mercadopago";
+import cors from "cors";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-/* 🔒 TOKEN (use variável de ambiente no Render) */
-const client = new MercadoPagoConfig({
-  accessToken: process.env.ACCESS_TOKEN || "APP_USR-1777996193160597-031816-ba8f1e228ae28d5a93265faaa9e95134-348606482"
-});
+// 🔑 COLOQUE SEU ACCESS TOKEN
+mercadopago.configurations.setAccessToken("SEU_ACCESS_TOKEN_AQUI");
 
-const payment = new Payment(client);
-
-/* ================= STATUS ================= */
-app.get("/", (req, res) => {
-  res.send("API PIX rodando 🚀");
-});
-
-/* ================= PIX ================= */
+// 🔥 ROTA PIX
 app.post("/create-pix", async (req, res) => {
-  try {
-    const { amount } = req.body;
 
-    const response = await payment.create({
-      body: {
-        transaction_amount: Number(amount),
-        description: "Pagamento PixelCoin",
-        payment_method_id: "pix",
-        payer: {
-          email: "teste@teste.com"
-        }
-      }
-    });
+try {
 
-    const pix = response.point_of_interaction.transaction_data;
+console.log("BODY:", req.body);
 
-    res.json({
-      qr_code: pix.qr_code,
-      qr_code_base64: pix.qr_code_base64
-    });
+const amount = Number(req.body.amount);
 
-  } catch (error) {
-    console.error("ERRO PIX:", error);
-    res.status(500).json({
-      error: "Erro ao gerar PIX",
-      detalhe: error.message
-    });
-  }
+if (!amount || amount <= 0) {
+return res.status(400).json({ error: "Valor inválido" });
+}
+
+const payment = await mercadopago.payment.create({
+transaction_amount: amount,
+payment_method_id: "pix",
+payer: {
+email: "cliente@email.com"
+}
 });
 
-/* ================= PORTA ================= */
-const PORT = process.env.PORT || 3000;
+return res.json(payment);
+
+} catch (err) {
+
+console.error("ERRO BACKEND:", err);
+
+return res.status(500).json({
+error: err.message
+});
+}
+});
+
+// 🔥 ROTA TESTE
+app.get("/", (req,res)=>{
+res.send("API PIX ONLINE 🚀");
+});
+
+app.listen(3000, () => console.log("Servidor rodando"));
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
