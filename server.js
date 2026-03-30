@@ -8,7 +8,7 @@ app.use(cors());
 app.use(express.json());
 
 // 🔑 COLOQUE SEU ACCESS TOKEN
-mercadopago.configurations.setAccessToken("SEU_ACCESS_TOKEN_AQUI");
+mercadopago.configurations.setAccessToken("APP_USR-1777996193160597-031816-ba8f1e228ae28d5a93265faaa9e95134-348606482");
 
 // 🔥 ROTA PIX
 app.post("/create-pix", async (req, res) => {
