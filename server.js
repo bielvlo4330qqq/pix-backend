@@ -7,7 +7,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 🔑 COLOQUE SEU ACCESS TOKEN
+// 🔑 SEU TOKEN
 mercadopago.configurations.setAccessToken("APP_USR-1777996193160597-031816-ba8f1e228ae28d5a93265faaa9e95134-348606482");
 
 // 🔥 ROTA PIX
@@ -48,8 +48,9 @@ app.get("/", (req,res)=>{
 res.send("API PIX ONLINE 🚀");
 });
 
-app.listen(3000, () => console.log("Servidor rodando"));
+// 🔥 PORTA CORRETA PARA RENDER
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+console.log("Servidor rodando na porta " + PORT);
 });
