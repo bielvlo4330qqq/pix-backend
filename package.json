@@ -1,11 +1,14 @@
 {
-  "name": "pix-api",
+  "name": "pix-backend",
   "version": "1.0.0",
   "main": "server.js",
   "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
     "express": "^4.18.2",
-    "mercadopago": "^1.5.13",
+    "mercadopago": "^2.0.0",
     "cors": "^2.8.5"
   }
 }
