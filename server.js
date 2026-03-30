@@ -15,15 +15,25 @@ app.post("/create-pix", async (req, res) => {
 
 try {
 
-console.log("BODY:", req.body);
+console.log("BODY RECEBIDO:", req.body);
 
-const amount = Number(req.body.amount);
+// 🔥 TRATAMENTO FORTE DO VALOR
+let amount = Number(req.body.amount);
 
-if (!amount || amount <= 0) {
+if (isNaN(amount)) {
+return res.status(400).json({ error: "Valor não é número" });
+}
+
+// força 2 casas decimais
+amount = parseFloat(amount.toFixed(2));
+
+if (amount <= 0) {
 return res.status(400).json({ error: "Valor inválido" });
 }
 
-// 🔥 CRIA PAGAMENTO PIX
+console.log("VALOR FINAL:", amount);
+
+// 🔥 CRIA PIX
 const payment = await mercadopago.payment.create({
 transaction_amount: amount,
 payment_method_id: "pix",
@@ -33,10 +43,22 @@ email: "cliente@email.com"
 }
 });
 
-// 🔥 PEGA O QR CODE CORRETO
+// 🔥 VALIDA RESPOSTA
+if (
+!payment.body ||
+!payment.body.point_of_interaction ||
+!payment.body.point_of_interaction.transaction_data
+) {
+console.error("RESPOSTA INVALIDA:", payment.body);
+return res.status(500).json({ error: "PIX não retornou dados" });
+}
+
+// 🔥 PEGA QR
 const pix = payment.body.point_of_interaction.transaction_data;
 
-// 🔥 RETORNA LIMPO PRO FRONT
+console.log("PIX GERADO");
+
+// 🔥 ENVIA PRO FRONT
 return res.json({
 qr_code: pix.qr_code,
 qr_code_base64: pix.qr_code_base64
@@ -44,7 +66,7 @@ qr_code_base64: pix.qr_code_base64
 
 } catch (err) {
 
-console.error("ERRO BACKEND:", err);
+console.error("ERRO BACKEND:", err.message);
 
 return res.status(500).json({
 error: err.message
@@ -57,7 +79,7 @@ app.get("/", (req,res)=>{
 res.send("API PIX ONLINE 🚀");
 });
 
-// 🔥 PORTA (RENDER)
+// 🔥 PORTA RENDER
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
