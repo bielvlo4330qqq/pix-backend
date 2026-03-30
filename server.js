@@ -23,15 +23,24 @@ if (!amount || amount <= 0) {
 return res.status(400).json({ error: "Valor inválido" });
 }
 
+// 🔥 CRIA PAGAMENTO PIX
 const payment = await mercadopago.payment.create({
 transaction_amount: amount,
 payment_method_id: "pix",
+description: "Pagamento Pixel Store",
 payer: {
 email: "cliente@email.com"
 }
 });
 
-return res.json(payment);
+// 🔥 PEGA O QR CODE CORRETO
+const pix = payment.body.point_of_interaction.transaction_data;
+
+// 🔥 RETORNA LIMPO PRO FRONT
+return res.json({
+qr_code: pix.qr_code,
+qr_code_base64: pix.qr_code_base64
+});
 
 } catch (err) {
 
@@ -48,7 +57,7 @@ app.get("/", (req,res)=>{
 res.send("API PIX ONLINE 🚀");
 });
 
-// 🔥 PORTA CORRETA PARA RENDER
+// 🔥 PORTA (RENDER)
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
